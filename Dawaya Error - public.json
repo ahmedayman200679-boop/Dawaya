@@ -1,0 +1,870 @@
+{
+  "name": "Dawaya Error",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -80
+      ],
+      "id": "e1beab6a-f152-44fd-85c1-88c3c566f269",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Turn the raw error into a classified record: what broke, how bad it is, and what to do.\nconst e = $input.first().json;\nconst message = String(e.execution?.error?.message || e.trigger?.error?.message || 'No error message');\nconst description = String(e.execution?.error?.description || e.trigger?.error?.description || '');\nconst workflow = e.workflow?.name || 'Unknown workflow';\nconst node = e.execution?.lastNodeExecuted || e.trigger?.node?.name || 'Trigger';\nconst text = (message + ' ' + description).toLowerCase();\n \n// First matching rule wins, so the most specific rules come first.\nconst rules = [\n  { type: 'auth', severity: 'critical',\n    pattern: /401|403|unauthori[sz]ed|forbidden|invalid_grant|invalid credentials|token (has )?expired|reauthori|access denied/,\n    fix: 'Reconnect the credential used by this node (Credentials, then Reconnect), then retry the execution. Retrying alone will not help.' },\n  { type: 'rate_limit', severity: 'warning',\n    pattern: /429|rate limit|too many requests|quota|resource has been exhausted/,\n    fix: 'Temporary. The next scheduled run usually succeeds. If it keeps happening, run the batch less often or upgrade the API plan.' },\n  { type: 'network', severity: 'warning',\n    pattern: /timeout|timed out|etimedout|econnreset|econnrefused|enotfound|socket hang up|\\b50[234]\\b|service unavailable|bad gateway/,\n    fix: 'Temporary network or service problem. Retry the execution; check the service status page if it repeats.' },\n  { type: 'ai_output', severity: 'warning',\n    pattern: /output parser|could not parse|parseable|unexpected token|json|schema/,\n    fix: 'The AI returned an unexpected format. Retry once; if it repeats, tighten the prompt or the output schema.' },\n  { type: 'data', severity: 'critical',\n    pattern: /cannot read propert|undefined|is not defined|not found|no column|missing|invalid syntax|expression|does not exist/,\n    fix: 'Data or workflow bug. Open the execution, find the input that broke this node, fix the data or the expression, then retry.' },\n];\nconst rule = rules.find(r => r.pattern.test(text)) ||\n  { type: 'unknown', severity: 'critical', fix: 'Unrecognised error. Open the execution and read the full error.' };\n \n// Business rule: anything failing in Intake affects candidates directly, so it is always critical.\nconst severity = /intake/i.test(workflow) ? 'critical' : rule.severity;\n \nreturn [{ json: {\n  time: $now.setZone('Africa/Cairo').toFormat('yyyy-MM-dd HH:mm'),\n  epochMinute: Math.floor(Date.now() / 60000),\n  workflow, node, type: rule.type, severity,\n  message: message.slice(0, 500), fix: rule.fix,\n  executionId: String(e.execution?.id ?? ''),\n  executionUrl: e.execution?.url || '',\n  fingerprint: [workflow, node, rule.type].join(' | '),\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -80
+      ],
+      "id": "865a0ff6-e62e-48b9-b1ab-aa54a86b7798",
+      "name": "Classify Error"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Dawaya"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1045290325,
+          "mode": "list",
+          "cachedResultName": "Errors"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "time": "={{ $json.time }}",
+            "workflow": "={{ $json.workflow }}",
+            "node": "={{ $json.node }}",
+            "type": "={{ $json.type }}",
+            "message": "={{ $json.message }}",
+            "execution_url": "={{ $json.executionUrl }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "node",
+              "displayName": "node",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "execution_url",
+              "displayName": "execution_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        -80
+      ],
+      "id": "9aa50336-8224-4751-94ba-847726da3bc8",
+      "name": "Log Error"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        -80
+      ],
+      "id": "ec2fff19-c50c-4f2c-9d8c-a4a2055518c3",
+      "name": "Alert Team"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "924e8019-2fe4-4f9a-a59d-15094aa8d1f4",
+              "leftValue": "={{ $('Classify Error').item.json.severity }}",
+              "rightValue": "critical",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        -80
+      ],
+      "id": "6c29ba20-7e3a-46ac-9d18-5065ca9ab480",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "you@example.com",
+        "subject": "Error Alret!",
+        "message": "=<div style=\"font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;padding:24px;\">   <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e1e5ea;\">      <!-- Header -->     <tr>       <td style=\"background:#d93025;padding:20px 24px;color:#ffffff;\">         <div style=\"font-size:12px;letter-spacing:1px;text-transform:uppercase;opacity:0.9;\">Dawaya Pharmacy Assistant</div>         <div style=\"font-size:22px;font-weight:bold;margin-top:4px;\">&#9888; Error Alert</div>       </td>     </tr>      <!-- Severity -->     <tr>       <td style=\"padding:20px 24px 0 24px;\">         <span style=\"display:inline-block;background:#fdecea;color:#d93025;border:1px solid #f5c6c2;border-radius:4px;padding:4px 10px;font-size:13px;font-weight:bold;text-transform:uppercase;\">           {{ $('Classify Error').first().json.severity || 'unknown' }}         </span>       </td>     </tr>      <!-- Details -->     <tr>       <td style=\"padding:16px 24px;\">         <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-size:14px;color:#202124;\">           <tr>             <td style=\"padding:8px 0;color:#5f6368;width:140px;\">Workflow</td>             <td style=\"padding:8px 0;font-weight:bold;\">{{ $('Error Trigger').first().json.workflow?.name || '-' }}</td>           </tr>           <tr>             <td style=\"padding:8px 0;color:#5f6368;border-top:1px solid #eef0f2;\">Failed node</td>             <td style=\"padding:8px 0;border-top:1px solid #eef0f2;font-weight:bold;\">{{ $('Error Trigger').first().json.execution?.lastNodeExecuted || '-' }}</td>           </tr>           <tr>             <td style=\"padding:8px 0;color:#5f6368;border-top:1px solid #eef0f2;\">Execution ID</td>             <td style=\"padding:8px 0;border-top:1px solid #eef0f2;\">{{ $('Error Trigger').first().json.execution?.id || '-' }}</td>           </tr>           <tr>             <td style=\"padding:8px 0;color:#5f6368;border-top:1px solid #eef0f2;\">Time (Cairo)</td>             <td style=\"padding:8px 0;border-top:1px solid #eef0f2;\">{{ $now.setZone('Africa/Cairo').toFormat('yyyy-MM-dd HH:mm') }}</td>           </tr>         </table>       </td>     </tr>      <!-- Error message -->     <tr>       <td style=\"padding:0 24px 16px 24px;\">         <div style=\"font-size:13px;color:#5f6368;margin-bottom:6px;\">Error message</div>         <div style=\"background:#202124;color:#f1f3f4;font-family:Consolas,Menlo,monospace;font-size:13px;line-height:1.5;padding:12px 14px;border-radius:6px;word-break:break-word;\">           {{ $('Error Trigger').first().json.execution?.error?.message || 'No error message' }}         </div>       </td>     </tr>      <!-- Button -->     <tr>       <td style=\"padding:0 24px 24px 24px;\">         <a href=\"{{ $('Error Trigger').first().json.execution?.url }}\" style=\"display:inline-block;background:#1a73e8;color:#ffffff;text-decoration:none;font-size:14px;font-weight:bold;padding:10px 18px;border-radius:6px;\">           Open execution        </a>       </td>     </tr>      <!-- Footer -->     <tr>       <td style=\"background:#f8f9fa;padding:12px 24px;font-size:12px;color:#80868b;border-top:1px solid #e1e5ea;\">         Automatic alert sent by n8n. Please check the workflow as soon as possible.       </td>     </tr>   </table> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "8201d3fa-8439-44bd-8d02-2f0ca9c7778a",
+      "name": "Send a message"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        144
+      ],
+      "id": "65f07315-f16c-456b-b07c-e8f8b6d322e2",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Dawaya"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 189181553,
+          "mode": "list",
+          "cachedResultName": "Catalog"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        144
+      ],
+      "id": "0fc69d8c-fe3f-4934-ac17-718291adb428",
+      "name": "Read Catalog"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Reservations not picked up within 2 hours expire, and their stockgoes back on the shelf.\nconst now = $now.setZone('Africa/Cairo').toFormat('yyyy-MM-dd HH:mm');\nreturn $('Read Reservations').all().map(i => i.json). filter(r =>\nr.res_id &&  r.expires_at < now).map(r => ({ json: r }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        144
+      ],
+      "id": "37296790-d3fd-402b-9d36-0fc8b87614b7",
+      "name": "Expires Lines"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Dawaya"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1421874284,
+          "mode": "list",
+          "cachedResultName": "Reservations"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        144
+      ],
+      "id": "c0482cfc-cb67-4f9b-bac0-e49e80fe8943",
+      "name": "Read Reservations"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Dawaya"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1421874284,
+          "mode": "list",
+          "cachedResultName": "Reservations"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "res_id": "={{ $json.res_id }}",
+            "expires_at": "Expired"
+          },
+          "matchingColumns": [
+            "res_id"
+          ],
+          "schema": [
+            {
+              "id": "res_id",
+              "displayName": "res_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_id",
+              "displayName": "customer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "wa_phone_id",
+              "displayName": "wa_phone_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sku",
+              "displayName": "sku",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "qty",
+              "displayName": "qty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_egp",
+              "displayName": "total_egp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pharmacist",
+              "displayName": "pharmacist",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "note",
+              "displayName": "note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1088,
+        144
+      ],
+      "id": "befd111a-320f-49e0-9a42-c62663648d10",
+      "name": "Update row in sheet"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "YOUR_WHATSAPP_PHONE_ID",
+        "recipientPhoneNumber": "={{ String($('Expires Lines').item.json.customer_id) }}",
+        "textBody": "your request has been expired",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1312,
+        144
+      ],
+      "id": "d35093ea-34b4-40ac-ae3e-811c72e07f9d",
+      "name": "Send message"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return the quantity of expired reservations to the stock (per SKU)\nconst zone = 'Africa/Cairo';\nconst now = $now.setZone(zone);\n\nconst parse = v => {\n  const s = String(v || '').trim();\n  if (!s) return null;\n  for (const f of ['yyyy-MM-dd HH:mm', 'yyyy-MM-dd HH:mm:ss', 'M/d/yyyy H:mm:ss', 'M/d/yyyy H:mm']) {\n    const d = DateTime.fromFormat(s, f, { zone });\n    if (d.isValid) return d;\n  }\n  const iso = DateTime.fromISO(s, { zone });\n  return iso.isValid ? iso : null;\n};\n\nconst back = {};\nfor (const r of $('Read Reservations').all().map(i => i.json)) {\n  const status = String(r.status || '').toLowerCase();\n  const exp = String(r.expires_at || '').trim().toLowerCase();\n  const d = parse(r.expires_at);\n\n  const isExpired = exp === 'expired' || status === 'expired' || (d && d < now);\n  const alreadyDone = status === 'restocked';        // never count a row twice\n\n  if (r.res_id && r.sku && isExpired && !alreadyDone) {\n    back[r.sku] = (back[r.sku] || 0) + (Number(r.qty) || 0);\n  }\n}\n\nconst cat = Object.fromEntries($('Read Catalog').all().map(i => [i.json.sku, i.json]));\n\nreturn Object.entries(back)\n  .filter(([s]) => cat[s])\n  .map(([sku, q]) => ({ json: { sku, stock: Number(cat[sku].stock) + q } }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        288
+      ],
+      "id": "1d1ec7b0-3c43-47aa-b0f5-4d4580e24b9b",
+      "name": "Restock Totals"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Dawaya"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 189181553,
+          "mode": "list",
+          "cachedResultName": "Catalog"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sku": "={{ $json.sku }}",
+            "stock": "={{ $json.stock }}"
+          },
+          "matchingColumns": [
+            "sku"
+          ],
+          "schema": [
+            {
+              "id": "sku",
+              "displayName": "sku",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "active_ingredient",
+              "displayName": "active_ingredient",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "strength",
+              "displayName": "strength",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "form",
+              "displayName": "form",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "price_egp",
+              "displayName": "price_egp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "stock",
+              "displayName": "stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reorder_level",
+              "displayName": "reorder_level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "controlled",
+              "displayName": "controlled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        864,
+        288
+      ],
+      "id": "2d67e9eb-1dee-4db9-b7eb-dbfa9a1fb379",
+      "name": "Update row in sheet1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 22
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        16,
+        528
+      ],
+      "id": "95d6c7df-9174-41e1-80e7-0b99aa532d03",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Dawaya"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 189181553,
+          "mode": "list",
+          "cachedResultName": "Catalog"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        304,
+        528
+      ],
+      "id": "b2fc57e9-2873-4abe-b27c-1c441cc78a42",
+      "name": "Read Catalog1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const low = $input.all().map(i => i.json)\n  .filter(p => p.sku && Number(p.stock) <= Number(p.reorder_level));\n\nif (!low.length) return [];\n\nreturn [{\n  json: {\n    text: '📦 Reorder list (' + low.length + '):\\n' +\n      low.map(p => '• ' + p.sku + ' ' + p.name + ' ' + p.strength +\n        ' · stock ' + p.stock + ' (reorder at ' + p.reorder_level + ')').join('\\n'),\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        528
+      ],
+      "id": "ada14e50-6fa5-4b83-9c81-5ad30762852a",
+      "name": "Find Low Stock"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        528
+      ],
+      "id": "a34b524a-0fb9-4bb8-b989-03ae59b9da93",
+      "name": "Send a text message"
+    },
+    {
+      "parameters": {
+        "sendTo": "you@example.com",
+        "subject": "Hello!",
+        "emailType": "text",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        704,
+        704
+      ],
+      "id": "1e477202-4bc7-4dd4-a2af-b14f3ec0dab1",
+      "name": "Send a message1"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Classify Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Error": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Error": {
+      "main": [
+        [
+          {
+            "node": "Alert Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Team": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Reservations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Catalog": {
+      "main": [
+        [
+          {
+            "node": "Restock Totals",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Expires Lines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Reservations": {
+      "main": [
+        [
+          {
+            "node": "Read Catalog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expires Lines": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restock Totals": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Read Catalog1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Catalog1": {
+      "main": [
+        [
+          {
+            "node": "Find Low Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Low Stock": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": []
+}
