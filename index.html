@@ -670,23 +670,23 @@
     <!-- Medicine & Prescription Assistant (REAL N8N CONNECTION) -->
     <div id="try-assistant" class="try-section">
       <h3 style="font-size: 1.15rem; color: white; margin-bottom: 4px;">Browser chat setup</h3>
-      <p style="font-size: 0.9rem; margin-bottom: 0;">Direct chat from this page is not connected yet. The included n8n workflow has WhatsApp and Telegram trigger nodes, but it does not include the web chat endpoint this feature would need.</p>
+      <p style="font-size: 0.9rem; margin-bottom: 0;">The URLs you shared are n8n test callbacks for incoming provider events, not a browser chat API. Direct chat on this page needs its own n8n Webhook workflow and a stable production HTTPS address.</p>
     </div>
 
     <!-- WhatsApp & Telegram Launchers -->
     <div id="try-channels" class="try-section" style="margin-top: 20px;">
       <h3 style="font-size: 1.15rem; color: white; margin-bottom: 4px;">Messaging channels</h3>
-      <p style="font-size: 0.85rem; margin-bottom: 14px;">Add the public links for your configured pharmacy bots to enable these buttons.</p>
+      <p style="font-size: 0.85rem; margin-bottom: 14px;">Set the public links for your configured pharmacy bots in the CHANNELS settings near the bottom of this file.</p>
 
       <div class="buttons-row">
-        <a id="whatsappLink" href="https://happiest-powdering-coveting.ngrok-free.dev/webhook-test/80c2fac7-9a4a-43c4-8ecd-f6f12d3bb24c/webhook" aria-disabled="true" class="btn-action disabled">
+        <a id="whatsappLink" href="#" aria-disabled="true" class="btn-action disabled">
           <span>💬</span> Open WhatsApp Assistant
         </a>
-        <a id="telegramLink" href="https://happiest-powdering-coveting.ngrok-free.dev/webhook-test/782a79a9-3288-4e32-83e9-cb1b742cf848/webhook" aria-disabled="true" class="btn-action telegram disabled">
+        <a id="telegramLink" href="#" aria-disabled="true" class="btn-action telegram disabled">
           <span>✈️</span> Open Telegram Bot
         </a>
       </div>
-      <p id="channelSetup" style="font-size: 0.75rem; color: var(--text-dim); margin-top: 10px;">Telegram in the included workflow currently listens for button callbacks; incoming chat messages need additional workflow setup.</p>
+      <p id="channelSetup" style="font-size: 0.75rem; color: var(--text-dim); margin-top: 10px;">The webhook-test URLs are not visitor links and only work while n8n is listening for a test event. Use active production webhooks in n8n; Telegram message handling also needs setup in the included workflow.</p>
     </div>
   </section>
 
@@ -826,7 +826,8 @@
   </footer>
 
   <script>
-    // Public bot URLs only. Never place API keys or access tokens in this file.
+    // Public visitor-facing bot links only, not n8n webhook callback URLs.
+    // Never put API keys or access tokens in this public file.
     const CHANNELS = {
       whatsappUrl: "",
       telegramUrl: ""
