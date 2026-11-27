@@ -855,7 +855,10 @@
   <script>
     // CONFIGURATION BLOCK - CONNECTS TO YOUR REAL N8N WORKFLOW
     const CONFIG = {
-      n8nBase:  "https://happiest-powdering-coveting.ngrok-free.dev",
+      n8nBase: localStorage.getItem("dawaya_n8n_base") || "https://happiest-powdering-coveting.ngrok-free.dev",
+      // Configure this with the path of a Dawaya chat webhook in n8n.
+      // Dawaya.json currently has WhatsApp and Telegram triggers, but no web chat trigger.
+      chat: localStorage.getItem("dawaya_chat_path") || "",
       whatsappWebhook: "/webhook/80c2fac7-9a4a-43c4-8ecd-f6f12d3bb24c/webhook",
       telegramWebhook: "/webhook/782a79a9-3288-4e32-83e9-cb1b742cf848/webhook"
     };
@@ -885,6 +888,12 @@
     // Ping n8n chat webhook to check if n8n and ngrok are both running
     async function checkStatus() {
       const statusEl = $("#status");
+      if (!CONFIG.chat) {
+        statusEl.textContent = "Chat webhook path not configured";
+        statusEl.className = "badge off";
+        document.querySelectorAll("#whatsappLink, #telegramLink").forEach(a => a.classList.add("disabled"));
+        return;
+      }
       statusEl.textContent = "Checking…";
       statusEl.className = "badge";
       
@@ -944,6 +953,11 @@
       
       add("me", q);
       const bot = add("bot", "…");
+
+      if (!CONFIG.chat) {
+        bot.textContent = "Web chat is not configured yet. Enter the Dawaya chat webhook path above and choose Connect & Test.";
+        return;
+      }
 
       try {
         const url = CONFIG.n8nBase + CONFIG.chat + "?ngrok-skip-browser-warning=1";
