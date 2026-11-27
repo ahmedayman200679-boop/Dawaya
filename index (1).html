@@ -1,0 +1,1057 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dawaya | Autonomous AI Pharmacy & Prescription Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --bg: #090e17;
+      --bg-card: #0f172a;
+      --bg-card-subtle: #162238;
+      --border: #1e293b;
+      --border-focus: #10b981;
+      
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --accent-cyan: #06b6d4;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      
+      --online-bg: #064e3b;
+      --online-text: #34d399;
+      --online-border: #059669;
+      
+      --offline-bg: #4c1d24;
+      --offline-text: #f87171;
+      --offline-border: #dc2626;
+      
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    /* Background pattern */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 400px;
+      background: radial-gradient(circle at 50% -20%, rgba(16, 185, 129, 0.12), transparent 70%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Typography */
+    h1 {
+      font-size: 2.35rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-arabic {
+      font-size: 1.5rem;
+      color: var(--accent);
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 2px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #f8fafc;
+      margin-top: 48px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    p {
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: #1e293b;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      transition: all 0.25s ease;
+    }
+
+    .badge.on {
+      background: var(--online-bg);
+      color: var(--online-text);
+      border-color: var(--online-border);
+    }
+
+    .badge.off {
+      background: var(--offline-bg);
+      color: var(--offline-text);
+      border-color: var(--offline-border);
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Section 1: Hero */
+    .hero {
+      padding: 24px 0 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .config-strip {
+      margin-top: 20px;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .config-strip input {
+      flex: 1;
+      min-width: 200px;
+      background: #090e17;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    .config-strip input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .config-strip button {
+      background: var(--accent);
+      color: #042f2e;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
+    }
+
+    .config-strip button:hover {
+      background: #34d399;
+    }
+
+    /* Section 2: Choose What You Want */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .action-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+
+    .action-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+      box-shadow: 0 10px 25px -8px rgba(16, 185, 129, 0.25);
+    }
+
+    .action-card-icon {
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+    }
+
+    .action-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .action-card p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .action-card-link {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #6ee7b7;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Section 3: Try It */
+    .try-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-top: 16px;
+    }
+
+    #msgs {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      min-height: 220px;
+      max-height: 420px;
+      overflow-y: auto;
+      background: #090e17;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .me {
+      align-self: flex-end;
+      background: var(--accent);
+      color: #042f2e;
+      padding: 8px 14px;
+      border-radius: 12px 12px 2px 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      max-width: 80%;
+      word-break: break-word;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 12px 12px 12px 2px;
+      font-size: 0.9rem;
+      max-width: 85%;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.5;
+    }
+
+    #ask {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    #q {
+      flex: 1;
+      background: #090e17;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      color: white;
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    #q:focus {
+      border-color: var(--accent);
+    }
+
+    #ask button {
+      background: var(--accent);
+      color: #042f2e;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 12px 22px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      white-space: nowrap;
+    }
+
+    #ask button:hover {
+      background: #34d399;
+    }
+
+    .suggest-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .chip {
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .buttons-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: #25d366;
+      color: #062810;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.25);
+    }
+
+    .btn-action:hover {
+      background: #20ba59;
+      transform: translateY(-1px);
+    }
+
+    .btn-action.telegram {
+      background: #229ed9;
+      color: #062030;
+      box-shadow: 0 4px 14px rgba(34, 158, 217, 0.25);
+    }
+
+    .btn-action.telegram:hover {
+      background: #1d8bc0;
+    }
+
+    .site-chat {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 1000;
+    }
+
+    .chat-launcher {
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 20px;
+      background: var(--accent);
+      color: #042f2e;
+      font: 700 0.95rem var(--font-main);
+      cursor: pointer;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+    }
+
+    .chat-panel {
+      position: absolute;
+      right: 0;
+      bottom: 70px;
+      width: min(360px, calc(100vw - 32px));
+      max-height: min(520px, calc(100vh - 110px));
+      overflow: auto;
+      padding: 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .chat-panel[hidden] { display: none; }
+
+    .chat-panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .chat-panel-header h3 { color: white; font-size: 1.05rem; }
+    .chat-panel-header p { font-size: 0.8rem; margin: 3px 0 0; }
+
+    .chat-close {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 9px;
+      background: #090e17;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .chat-panel label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .chat-panel textarea {
+      display: block;
+      width: 100%;
+      resize: vertical;
+      min-height: 82px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: #090e17;
+      color: var(--text);
+      font: 0.9rem var(--font-main);
+    }
+
+    .chat-panel textarea:focus { outline: 2px solid var(--accent); }
+
+    .chat-panel .buttons-row { margin-top: 12px; gap: 8px; }
+    .chat-panel .btn-action { flex: 1 1 140px; justify-content: center; padding: 10px 12px; font-size: 0.82rem; }
+
+    .chat-note {
+      margin: 12px 0 0;
+      color: var(--text-dim);
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 480px) {
+      .site-chat { right: 12px; bottom: 12px; }
+      .chat-panel { right: 0; bottom: 66px; }
+    }
+
+    a.disabled {
+      pointer-events: none;
+      opacity: 0.45;
+      filter: grayscale(1);
+    }
+
+    /* Section 4: How It Works */
+    .steps-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #042f2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+    }
+
+    .step-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .step-card p {
+      font-size: 0.875rem;
+      margin-bottom: 12px;
+    }
+
+    /* Visual Node Graph representation */
+    .nodes-flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      background: #090e17;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+
+    .node-pill {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #93c5fd;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .node-pill.trigger {
+      background: #451a03;
+      border-color: #78350f;
+      color: #fcd34d;
+    }
+
+    .node-pill.ai {
+      background: #311042;
+      border-color: #581c87;
+      color: #d8b4fe;
+    }
+
+    .node-pill.connector {
+      background: #064e3b;
+      border-color: #065f46;
+      color: #6ee7b7;
+    }
+
+    .node-arrow {
+      color: #64748b;
+      font-weight: bold;
+    }
+
+    /* Section 5: Download */
+    .download-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .download-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: border-color 0.2s ease;
+    }
+
+    .download-item:hover {
+      border-color: var(--accent);
+    }
+
+    .download-info h4 {
+      font-size: 0.95rem;
+      color: white;
+      font-family: var(--font-mono);
+      margin-bottom: 2px;
+    }
+
+    .download-info span {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .btn-download {
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border);
+      color: #6ee7b7;
+      padding: 8px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 700;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-download:hover {
+      background: var(--accent);
+      color: #042f2e;
+      border-color: var(--accent);
+    }
+
+    footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 20px 14px 60px;
+      }
+      h1 {
+        font-size: 1.85rem;
+      }
+      .buttons-row {
+        flex-direction: column;
+      }
+      .btn-action {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. HERO SECTION -->
+  <header class="hero">
+    <h1>
+      <span>Dawaya</span>
+      <span class="brand-arabic">دوايا</span>
+    </h1>
+    <p style="font-size: 1.05rem; margin-top: 6px; color: #cbd5e1;">
+      Autonomous Pharmacy & Prescription Engine: Order medications, parse doctor prescriptions with Google Gemini Vision, match catalog with fuzzy logic, and hold 2-hour reservations.
+    </p>
+
+    <div class="hero-meta">
+      <span class="badge off" role="status">
+        <span class="badge-dot"></span> Offline
+      </span>
+      <span style="font-size: 0.8rem; color: var(--text-dim);">
+        Powered by n8n, Google Gemini Vision & Google Sheets
+      </span>
+    </div>
+
+    <div class="config-strip" role="note">
+      GitHub Pages hosts this website. Live pharmacy messaging needs the n8n workflows running on a separate server.
+    </div>
+  </header>
+
+  <!-- 2. CHOOSE WHAT YOU WANT -->
+  <section id="choose">
+    <h2>Choose what you want</h2>
+    <p>Select any of Dawaya's core pharmacy services below:</p>
+
+    <div class="cards-grid">
+      <!-- Card 1: Check Medicine & Alternative -->
+      <a href="#try-channels" class="action-card">
+        <div>
+          <div class="action-card-icon">💊</div>
+          <h3>Check Medicine & Alternatives</h3>
+          <p>Search medication stock, active ingredients, and get automatic cheapest in-stock alternative suggestions when a brand is unavailable.</p>
+        </div>
+        <div class="action-card-link">Check Availability &rarr;</div>
+      </a>
+
+      <!-- Card 2: Prescription Scanner (Gemini OCR) -->
+      <a href="#try-channels" class="action-card">
+        <div>
+          <div class="action-card-icon">📷</div>
+          <h3>Prescription Scanner (OCR)</h3>
+          <p>Send a photo or text of a doctor's prescription. Google Gemini extracts medicine names, dosages, and quantities automatically.</p>
+        </div>
+        <div class="action-card-link">Scan Prescription &rarr;</div>
+      </a>
+
+      <!-- Card 3: 2-Hour Pickup Reservation -->
+      <a href="#try-channels" class="action-card">
+        <div>
+          <div class="action-card-icon">⏱️</div>
+          <h3>Hold & 2-Hour Pickup</h3>
+          <p>Instant reservation code holding stock for 2 hours in Cairo timezone, with automated restocking if not claimed.</p>
+        </div>
+        <div class="action-card-link">Order via Channels &rarr;</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 3. TRY IT SECTION -->
+  <section id="try">
+    <h2>Try it</h2>
+    <p>This page is a static website. Live pharmacy requests are handled by the separately hosted messaging workflows.</p>
+
+    <!-- Medicine & Prescription Assistant (REAL N8N CONNECTION) -->
+    <div id="try-assistant" class="try-section">
+      <h3 style="font-size: 1.15rem; color: white; margin-bottom: 4px;">Browser chat setup</h3>
+      <p style="font-size: 0.9rem; margin-bottom: 0;">This project is tried through its messaging bots. The n8n test callback URLs are not visitor chat links; the buttons below open the actual messaging apps. Browser chat is not part of the current workflow.</p>
+    </div>
+
+    <!-- WhatsApp & Telegram Launchers -->
+    <div id="try-channels" class="try-section" style="margin-top: 20px;">
+      <h3 style="font-size: 1.15rem; color: white; margin-bottom: 4px;">Messaging channels</h3>
+      <p style="font-size: 0.85rem; margin-bottom: 14px;">Set the public links for your configured pharmacy bots in the CHANNELS settings near the bottom of this file.</p>
+
+      <div class="buttons-row">
+        <a id="whatsappLink" href="#" aria-disabled="true" class="btn-action disabled">
+          <span>💬</span> Open WhatsApp test chat
+        </a>
+        <a id="telegramLink" href="#" aria-disabled="true" class="btn-action telegram disabled">
+          <span>✈️</span> Open Telegram Bot
+        </a>
+      </div>
+      <p id="channelSetup" style="font-size: 0.75rem; color: var(--text-dim); margin-top: 10px;">WhatsApp opens Meta's test number; replace it with the pharmacy's public business number before using this page with customers. Telegram opens @Dawaya_bot, but the included workflow currently listens for button callbacks; ordinary customer chat messages still need to be enabled in n8n.</p>
+    </div>
+  </section>
+
+  <!-- 4. HOW IT WORKS SECTION -->
+  <section id="how-it-works">
+    <h2>How it works</h2>
+    <p>Dawaya operates a high-resilience 5-stage pharmacy workflow connecting AI vision, catalog fuzzy search, and automated inventory management:</p>
+
+    <div class="steps-container">
+      <!-- Step 1 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">1</div>
+          <div class="step-title">Omnichannel Customer Intake (WhatsApp & Telegram)</div>
+        </div>
+        <p>Receives text messages or prescription photos from customers. The message is normalized and classified to handle images and raw text requests simultaneously.</p>
+        
+        <div class="nodes-flow">
+          <span class="node-pill trigger">📱 WhatsApp Trigger</span>
+          <span class="node-arrow">+</span>
+          <span class="node-pill trigger">✈️ Telegram Trigger</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill">Normalization Message</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill">Is Photo?</span>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">2</div>
+          <div class="step-title">Multimodal Prescription Vision OCR (Google Gemini)</div>
+        </div>
+        <p>If the patient uploads a handwritten prescription image, the workflow downloads the media from WhatsApp/Telegram servers and prompts Google Gemini to extract medicine names, strengths, and dosages.</p>
+        
+        <div class="nodes-flow">
+          <span class="node-pill connector">📥 Download Media</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill">Prepare Prescription Read</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill ai">👁️ AI Read Request (Gemini)</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill connector">📊 Read Catalog (Sheets)</span>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">3</div>
+          <div class="step-title">Smart Catalog Matching & Levenshtein Fuzzy Search</div>
+        </div>
+        <p>Matches extracted medications against the Google Sheets catalog using Levenshtein distance on brand names and active ingredients. If an item is out of stock, it automatically discovers the cheapest in-stock alternative with identical active ingredient and strength.</p>
+        
+        <div class="nodes-flow">
+          <span class="node-pill">Match Catalog (JS Engine)</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill">Controlled Drug Gate</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill ai">Cheapest Alt Recommender</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill">Switch Router</span>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">4</div>
+          <div class="step-title">Automated Reservation vs. Pharmacist Review</div>
+        </div>
+        <p>Unambiguous in-stock items are auto-reserved: stock is decremented and a 2-hour hold confirmation with total price in EGP is dispatched to the patient. Controlled narcotics or ambiguous items are sent to the Pharmacist Telegram channel with inline approve/reject buttons.</p>
+        
+        <div class="nodes-flow">
+          <span class="node-pill">Route: Auto Reserve</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill connector">📊 Append Reservation</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill connector">📦 Decrement Stock</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill connector">✉️ WhatsApp Confirmation</span>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">5</div>
+          <div class="step-title">2-Hour Expiry Watchdog & Restock Automation (Dawaya Error)</div>
+        </div>
+        <p>A scheduled watchdog checks active reservations every 15 minutes. Unclaimed medications after 2 hours (Cairo time) expire automatically, returning stock to the shelf and notifying the patient.</p>
+        
+        <div class="nodes-flow">
+          <span class="node-pill trigger">⏰ 15-Min Expiration Watchdog</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill">Expired Lines Filter</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill">Restock Totals</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill connector">📦 Return Stock</span>
+          <span class="node-arrow">&rarr;</span>
+          <span class="node-pill trigger">⚠️ Low Stock Alerts (10 PM)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. DOWNLOAD SECTION -->
+  <section id="download">
+    <h2>Download</h2>
+    <p>Cleaned workflow files ready for direct import into your n8n workspace (located in <code>workflows/</code>):</p>
+
+    <div class="download-grid">
+      <!-- 1. Dawaya -->
+      <div class="download-item">
+        <div class="download-info">
+          <h4>Dawaya.json</h4>
+          <span>35 Nodes &bull; Multimodal OCR, Fuzzy Matching & Orders</span>
+        </div>
+        <a href="workflows/Dawaya.json" download class="btn-download">Download</a>
+      </div>
+
+      <!-- 2. Dawaya Error -->
+      <div class="download-item">
+        <div class="download-info">
+          <h4>Dawaya Error.json</h4>
+          <span>19 Nodes &bull; 2-Hour Auto-Restock & Low Stock Sentinel</span>
+        </div>
+        <a href="workflows/Dawaya Error.json" download class="btn-download">Download</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="site-chat">
+    <button id="chatToggle" class="chat-launcher" type="button" aria-expanded="false" aria-controls="chatPanel">💬 Chat with Dawaya</button>
+    <section id="chatPanel" class="chat-panel" role="dialog" aria-labelledby="chatPanelTitle" hidden>
+      <div class="chat-panel-header">
+        <div>
+          <h3 id="chatPanelTitle">Chat with Dawaya</h3>
+          <p>Choose WhatsApp or Telegram</p>
+        </div>
+        <button id="chatClose" class="chat-close" type="button" aria-label="Close chat">✕</button>
+      </div>
+      <label for="chatMessage">Your message</label>
+      <textarea id="chatMessage" placeholder="Type a question about medicine availability..."></textarea>
+      <div class="buttons-row">
+        <a id="panelWhatsapp" href="#" aria-disabled="true" class="btn-action disabled">Continue in WhatsApp</a>
+        <a id="panelTelegram" href="#" aria-disabled="true" class="btn-action telegram disabled">Open Telegram</a>
+      </div>
+      <p class="chat-note">This panel opens the selected app; it does not send your message from this page. WhatsApp opens with your message ready to send. In Telegram, type your message after the bot opens. This is a demo, so use test information only. Replies stay in the messaging app; in-page replies need a separate n8n chat workflow.</p>
+    </section>
+  </div>
+
+  <footer>
+    Dawaya (دوايا) &bull; Pharmacy workflow demo &bull; n8n workflow files are available above.
+  </footer>
+
+  <script>
+    // Public visitor-facing bot links only, not n8n webhook callback URLs.
+    // Never put API keys or access tokens in this public file.
+    const CHANNELS = {
+      whatsappUrl: "https://wa.me/15551544987",
+      telegramUrl: "https://t.me/Dawaya_bot"
+    };
+
+    function safeChannelUrl(value, allowedHosts) {
+      if (!value) return "";
+      try {
+        const url = new URL(value);
+        if (url.protocol !== "https:" || !allowedHosts.includes(url.hostname)) return "";
+        return url.href;
+      } catch {
+        return "";
+      }
+    }
+
+    function enableChannel(id, url) {
+      if (!url) return;
+      const link = document.getElementById(id);
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.classList.remove("disabled");
+      link.removeAttribute("aria-disabled");
+    }
+
+    const whatsappUrl = safeChannelUrl(CHANNELS.whatsappUrl, ["wa.me", "www.wa.me"]);
+    const telegramUrl = safeChannelUrl(CHANNELS.telegramUrl, ["t.me", "www.t.me"]);
+    enableChannel("whatsappLink", whatsappUrl);
+    enableChannel("telegramLink", telegramUrl);
+
+    function setPanelLink(id, url) {
+      if (!url) return;
+      const link = document.getElementById(id);
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.classList.remove("disabled");
+      link.removeAttribute("aria-disabled");
+    }
+
+    function refreshPanelLinks() {
+      if (whatsappUrl) {
+        const url = new URL(whatsappUrl);
+        const message = document.getElementById("chatMessage").value.trim();
+        if (message) url.searchParams.set("text", message);
+        setPanelLink("panelWhatsapp", url.href);
+      }
+      setPanelLink("panelTelegram", telegramUrl);
+    }
+
+    const chatToggle = document.getElementById("chatToggle");
+    const chatClose = document.getElementById("chatClose");
+    const chatPanel = document.getElementById("chatPanel");
+    const chatMessage = document.getElementById("chatMessage");
+
+    function setChatOpen(open) {
+      chatPanel.hidden = !open;
+      chatToggle.setAttribute("aria-expanded", String(open));
+      if (open) chatMessage.focus();
+    }
+
+    chatToggle.addEventListener("click", () => setChatOpen(chatPanel.hidden));
+    chatClose.addEventListener("click", () => setChatOpen(false));
+    chatMessage.addEventListener("input", refreshPanelLinks);
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && !chatPanel.hidden) setChatOpen(false);
+    });
+    refreshPanelLinks();
+  </script>
+<script>
+// Paste your n8n PRODUCTION webhook URL here (https, contains /webhook/, not /webhook-test/).
+// This file is public: never put API keys or tokens in it.
+const STATUS_URL = "https://happiest-powdering-coveting.ngrok-free.dev/webhook/2eeba845-c622-4969-a89a-d0149e2f9b1e";
+
+(function () {
+  const badge = document.querySelector(".hero-meta .badge");
+  if (!badge) return;
+
+  function show(state, text) {
+    badge.classList.remove("on", "off");
+    if (state) badge.classList.add(state);
+    const dot = document.createElement("span");
+    dot.className = "badge-dot";
+    badge.replaceChildren(dot, " " + text);
+  }
+
+  async function check() {
+    if (!STATUS_URL) return show("off", "Offline");
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    try {
+      const url = new URL(STATUS_URL);
+      const headers = url.hostname.includes("ngrok")
+        ? { "ngrok-skip-browser-warning": "1" }
+        : {};
+      const res = await fetch(url, { headers, cache: "no-store", signal: controller.signal });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      await res.json(); // an HTML error page counts as offline
+      show("on", "Online");
+    } catch {
+      show("off", "Offline");
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  show("", "Checking...");
+  check();
+  setInterval(() => { if (!document.hidden) check(); }, 60000);
+})();
+</script>
+</body>
+</html>
