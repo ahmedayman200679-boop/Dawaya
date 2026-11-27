@@ -703,8 +703,8 @@
     </p>
 
     <div class="hero-meta">
-      <span class="badge on">
-        <span class="badge-dot"></span> Website ready
+      <span class="badge off" role="status">
+        <span class="badge-dot"></span> Offline
       </span>
       <span style="font-size: 0.8rem; color: var(--text-dim);">
         Powered by n8n, Google Gemini Vision & Google Sheets
@@ -1010,5 +1010,48 @@
     });
     refreshPanelLinks();
   </script>
+<script>
+// Paste your n8n PRODUCTION webhook URL here (https, contains /webhook/, not /webhook-test/).
+// This file is public: never put API keys or tokens in it.
+const STATUS_URL = "";
+
+(function () {
+  const badge = document.querySelector(".hero-meta .badge");
+  if (!badge) return;
+
+  function show(state, text) {
+    badge.classList.remove("on", "off");
+    if (state) badge.classList.add(state);
+    const dot = document.createElement("span");
+    dot.className = "badge-dot";
+    badge.replaceChildren(dot, " " + text);
+  }
+
+  async function check() {
+    if (!STATUS_URL) return show("off", "Offline");
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    try {
+      const url = new URL(STATUS_URL);
+      const headers = url.hostname.includes("ngrok")
+        ? { "ngrok-skip-browser-warning": "1" }
+        : {};
+      const res = await fetch(url, { headers, cache: "no-store", signal: controller.signal });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      await res.json(); // an HTML error page counts as offline
+      show("on", "Online");
+    } catch {
+      show("off", "Offline");
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  show("", "Checking...");
+  check();
+  setInterval(() => { if (!document.hidden) check(); }, 60000);
+})();
+</script>
 </body>
 </html>
