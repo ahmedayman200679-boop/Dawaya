@@ -611,25 +611,16 @@
     </p>
 
     <div class="hero-meta">
-      <span class="badge" id="status">
-        <span class="badge-dot"></span> Checking…
+      <span class="badge on">
+        <span class="badge-dot"></span> Website ready
       </span>
       <span style="font-size: 0.8rem; color: var(--text-dim);">
         Powered by n8n, Google Gemini Vision & Google Sheets
       </span>
     </div>
 
-    <!-- Live n8n Endpoint Configuration -->
-    <div class="config-strip">
-      <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:260px;">
-        <span style="font-weight:600; font-size:0.75rem; color:#94a3b8;">n8n Base URL:</span>
-        <input type="url" id="ngrokInput" placeholder="https://happiest-powdering-coveting.ngrok-free.dev">
-      </div>
-      <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:240px;">
-        <span style="font-weight:600; font-size:0.75rem; color:#94a3b8;">Chat Webhook Path:</span>
-        <input type="text" id="chatPathInput" placeholder="/webhook/YOUR-CHAT-ID/chat">
-      </div>
-      <button type="button" id="updateNgrokBtn" style="align-self:flex-end;">Connect & Test</button>
+    <div class="config-strip" role="note">
+      GitHub Pages hosts this website. Live pharmacy messaging needs the n8n workflows running on a separate server.
     </div>
   </header>
 
@@ -674,45 +665,28 @@
   <!-- 3. TRY IT SECTION -->
   <section id="try">
     <h2>Try it</h2>
-    <p>Connected directly to your real n8n workflow. Every message goes through your real n8n nodes:</p>
+    <p>This page is a static website. Live pharmacy requests are handled by the separately hosted messaging workflows.</p>
 
     <!-- Medicine & Prescription Assistant (REAL N8N CONNECTION) -->
     <div id="try-assistant" class="try-section">
-      <h3 style="font-size: 1.15rem; color: white; margin-bottom: 4px;">Live Pharmacy Assistant</h3>
-      <p style="font-size: 0.85rem; margin-bottom: 12px;">Ask about medications, dosages, or availability (all queries answered by your live n8n workflow):</p>
-
-      <div id="msgs"></div>
-
-      <div class="suggest-chips">
-        <span style="font-size: 0.75rem; color: var(--text-dim); padding: 4px 0;">Suggestions:</span>
-        <button type="button" class="chip" data-q="Do you have Panadol Extra in stock?">Panadol Extra</button>
-        <button type="button" class="chip" data-q="What is the price and dose for Brufen 400?">Brufen 400</button>
-        <button type="button" class="chip" data-q="Do you have Augmentin 1g?">Augmentin 1g</button>
-        <button type="button" class="chip" data-q="What are the alternatives for Cataflam 50mg?">Cataflam alternatives</button>
-      </div>
-
-      <form id="ask">
-        <input id="q" placeholder="Ask your real n8n workflow (e.g. 'Do you have Panadol in stock?')" required autocomplete="off">
-        <button type="submit">Send</button>
-      </form>
+      <h3 style="font-size: 1.15rem; color: white; margin-bottom: 4px;">Browser chat setup</h3>
+      <p style="font-size: 0.9rem; margin-bottom: 0;">Direct chat from this page is not connected yet. The included n8n workflow has WhatsApp and Telegram trigger nodes, but it does not include the web chat endpoint this feature would need.</p>
     </div>
 
     <!-- WhatsApp & Telegram Launchers -->
     <div id="try-channels" class="try-section" style="margin-top: 20px;">
-      <h3 style="font-size: 1.15rem; color: white; margin-bottom: 4px;">Live Omnichannel Messaging</h3>
-      <p style="font-size: 0.85rem; margin-bottom: 14px;">Connected directly to your n8n WhatsApp and Telegram triggers:</p>
+      <h3 style="font-size: 1.15rem; color: white; margin-bottom: 4px;">Messaging channels</h3>
+      <p style="font-size: 0.85rem; margin-bottom: 14px;">Add the public links for your configured pharmacy bots to enable these buttons.</p>
 
       <div class="buttons-row">
-        <a id="whatsappLink" href="https://wa.me/" target="_blank" rel="noopener" class="btn-action">
+        <a id="whatsappLink" href="#" aria-disabled="true" class="btn-action disabled">
           <span>💬</span> Open WhatsApp Assistant
         </a>
-        <a id="telegramLink" href="https://t.me/" target="_blank" rel="noopener" class="btn-action telegram">
+        <a id="telegramLink" href="#" aria-disabled="true" class="btn-action telegram disabled">
           <span>✈️</span> Open Telegram Bot
         </a>
       </div>
-      <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 10px;">
-        WhatsApp Webhook ID: <code>80c2fac7-9a4a-43c4-8ecd-f6f12d3bb24c</code> &bull; Telegram Webhook ID: <code>782a79a9-3288-4e32-83e9-cb1b742cf848</code>
-      </p>
+      <p id="channelSetup" style="font-size: 0.75rem; color: var(--text-dim); margin-top: 10px;">Telegram in the included workflow currently listens for button callbacks; incoming chat messages need additional workflow setup.</p>
     </div>
   </section>
 
@@ -848,148 +822,34 @@
   </section>
 
   <footer>
-    Dawaya (دوايا) &bull; Autonomous Pharmacy AI &bull; Source Workflows in <code>D:\Dawaa Wrokflow</code>
+    Dawaya (دوايا) &bull; Pharmacy workflow demo &bull; n8n workflow files are available above.
   </footer>
 
-  <!-- JAVASCRIPT LOGIC -->
   <script>
-    // CONFIGURATION BLOCK - CONNECTS TO YOUR REAL N8N WORKFLOW
-    const CONFIG = {
-      n8nBase: "https://happiest-powdering-coveting.ngrok-free.dev",
-      // Configure this with the path of a Dawaya chat webhook in n8n.
-      // Dawaya.json currently has WhatsApp and Telegram triggers, but no web chat trigger.
-      whatsappWebhook: "/webhook/80c2fac7-9a4a-43c4-8ecd-f6f12d3bb24c/webhook",
-      telegramWebhook: "/webhook/782a79a9-3288-4e32-83e9-cb1b742cf848/webhook"
+    // Public bot URLs only. Never place API keys or access tokens in this file.
+    const CHANNELS = {
+      whatsappUrl: "",
+      telegramUrl: ""
     };
 
-    const $ = s => document.querySelector(s);
-    const sessionId = crypto.randomUUID();
-
-    // RULE 1: Keep ngrok-skip-browser-warning in the chat request
-    const HEADERS = {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "1"
-    };
-
-    // Initialize inputs
-    const ngrokInput = $("#ngrokInput");
-    const chatPathInput = $("#chatPathInput");
-    if (ngrokInput) ngrokInput.value = CONFIG.n8nBase;
-    if (chatPathInput) chatPathInput.value = CONFIG.chat;
-
-    function setStatus(online) {
-      const statusEl = $("#status");
-      statusEl.textContent = online ? "Online" : "Offline, please try again later";
-      statusEl.className = "badge " + (online ? "on" : "off");
-      document.querySelectorAll("#whatsappLink, #telegramLink").forEach(a => a.classList.toggle("disabled", !online));
-    }
-
-    // Ping n8n chat webhook to check if n8n and ngrok are both running
-    async function checkStatus() {
-      const statusEl = $("#status");
-      if (!CONFIG.chat) {
-        statusEl.textContent = "Chat webhook path not configured";
-        statusEl.className = "badge off";
-        document.querySelectorAll("#whatsappLink, #telegramLink").forEach(a => a.classList.add("disabled"));
-        return;
-      }
-      statusEl.textContent = "Checking…";
-      statusEl.className = "badge";
-      
+    function enableChannel(id, value, allowedHosts) {
+      if (!value) return;
       try {
-        const url = CONFIG.n8nBase + CONFIG.chat + "?ngrok-skip-browser-warning=1";
-        const r = await fetch(url, {
-          method: "POST",
-          headers: HEADERS,
-          body: JSON.stringify({ action: "loadPreviousSession", sessionId })
-        });
-        setStatus(r.ok || r.status < 500);
-      } catch (err) {
-        setStatus(false);
+        const url = new URL(value);
+        if (url.protocol !== "https:" || !allowedHosts.includes(url.hostname)) return;
+        const link = document.getElementById(id);
+        link.href = url.href;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.classList.remove("disabled");
+        link.removeAttribute("aria-disabled");
+      } catch {
+        // Leave invalid or incomplete links disabled.
       }
     }
-    checkStatus();
 
-    // Connect & Test Button
-    const updateBtn = $("#updateNgrokBtn");
-    if (updateBtn) {
-      updateBtn.onclick = () => {
-        let baseVal = ngrokInput.value.trim().replace(/\/+$/, "");
-        let pathVal = chatPathInput.value.trim();
-        if (baseVal) {
-          if (!baseVal.startsWith("http://") && !baseVal.startsWith("https://")) {
-            baseVal = "https://" + baseVal;
-          }
-          CONFIG.n8nBase = baseVal;
-          localStorage.setItem("dawaya_n8n_base", baseVal);
-        }
-        if (pathVal) {
-          if (!pathVal.startsWith("/")) pathVal = "/" + pathVal;
-          CONFIG.chat = pathVal;
-          localStorage.setItem("dawaya_chat_path", pathVal);
-        }
-        checkStatus();
-      };
-    }
-
-    // RULE 3: Use textContent for anything a visitor or the AI writes, never innerHTML
-    function add(cls, text) {
-      const d = document.createElement("div");
-      d.className = cls;
-      d.textContent = text;
-      $("#msgs").append(d);
-      $("#msgs").scrollTop = $("#msgs").scrollHeight;
-      return d;
-    }
-
-    // REAL N8N WORKFLOW EXECUTION (NO SAMPLE DATA)
-    $("#ask").onsubmit = async e => {
-      e.preventDefault();
-      const qInput = $("#q");
-      const q = qInput.value.trim();
-      if (!q) return;
-      qInput.value = "";
-      
-      add("me", q);
-      const bot = add("bot", "…");
-
-      if (!CONFIG.chat) {
-        bot.textContent = "Web chat is not configured yet. Enter the Dawaya chat webhook path above and choose Connect & Test.";
-        return;
-      }
-
-      try {
-        const url = CONFIG.n8nBase + CONFIG.chat + "?ngrok-skip-browser-warning=1";
-        const r = await fetch(url, {
-          method: "POST",
-          headers: HEADERS,
-          body: JSON.stringify({ 
-            action: "sendMessage", 
-            sessionId, 
-            chatInput: q,
-            text: q 
-          })
-        });
-        
-        if (!r.ok) throw new Error("HTTP " + r.status);
-        const data = await r.json();
-        
-        // Output from the real n8n workflow
-        bot.textContent = data.output || data.text || data.message || (typeof data === "string" ? data : JSON.stringify(data));
-        setStatus(true);
-      } catch (err) {
-        bot.textContent = "The Dawaya assistant is offline right now. Please verify that your n8n workflow and ngrok are running.";
-        setStatus(false);
-      }
-    };
-
-    // Suggestion chips
-    document.querySelectorAll(".chip").forEach(chip => {
-      chip.onclick = () => {
-        $("#q").value = chip.getAttribute("data-q");
-        $("#ask").dispatchEvent(new Event("submit"));
-      };
-    });
+    enableChannel("whatsappLink", CHANNELS.whatsappUrl, ["wa.me", "www.wa.me"]);
+    enableChannel("telegramLink", CHANNELS.telegramUrl, ["t.me", "www.t.me"]);
   </script>
 </body>
 </html>
