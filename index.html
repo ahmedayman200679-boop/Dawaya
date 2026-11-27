@@ -181,7 +181,7 @@
 
     .config-strip input {
       flex: 1;
-      min-width: 240px;
+      min-width: 200px;
       background: #090e17;
       border: 1px solid var(--border);
       color: #fff;
@@ -314,12 +314,6 @@
       white-space: pre-wrap;
       word-break: break-word;
       line-height: 1.5;
-    }
-
-    .bot-card-res {
-      border-left: 3px solid var(--accent);
-      padding-left: 10px;
-      margin: 4px 0;
     }
 
     #ask {
@@ -613,7 +607,7 @@
       <span class="brand-arabic">دوايا</span>
     </h1>
     <p style="font-size: 1.05rem; margin-top: 6px; color: #cbd5e1;">
-      Autonomous Pharmacy & Prescription Engine: Order medications via WhatsApp & Telegram, parse handwritten prescriptions with Google Gemini Vision, match catalog with fuzzy logic, and hold 2-hour reservations.
+      Autonomous Pharmacy & Prescription Engine: Order medications, parse doctor prescriptions with Google Gemini Vision, match catalog with fuzzy logic, and hold 2-hour reservations.
     </p>
 
     <div class="hero-meta">
@@ -621,15 +615,21 @@
         <span class="badge-dot"></span> Checking…
       </span>
       <span style="font-size: 0.8rem; color: var(--text-dim);">
-        Powered by n8n, Google Gemini Vision, WhatsApp API & Telegram
+        Powered by n8n, Google Gemini Vision & Google Sheets
       </span>
     </div>
 
-    <!-- Live ngrok base URL config strip -->
+    <!-- Live n8n Endpoint Configuration -->
     <div class="config-strip">
-      <span style="font-weight: 600; color: #cbd5e1;">n8n ngrok URL:</span>
-      <input type="url" id="ngrokInput" placeholder="https://happiest-powdering-coveting.ngrok-free.dev">
-      <button type="button" id="updateNgrokBtn">Connect & Test</button>
+      <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:260px;">
+        <span style="font-weight:600; font-size:0.75rem; color:#94a3b8;">n8n Base URL:</span>
+        <input type="url" id="ngrokInput" placeholder="https://happiest-powdering-coveting.ngrok-free.dev">
+      </div>
+      <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:240px;">
+        <span style="font-weight:600; font-size:0.75rem; color:#94a3b8;">Chat Webhook Path:</span>
+        <input type="text" id="chatPathInput" placeholder="/webhook/YOUR-CHAT-ID/chat">
+      </div>
+      <button type="button" id="updateNgrokBtn" style="align-self:flex-end;">Connect & Test</button>
     </div>
   </header>
 
@@ -654,7 +654,7 @@
         <div>
           <div class="action-card-icon">📷</div>
           <h3>Prescription Scanner (OCR)</h3>
-          <p>Send a photo of a doctor's handwritten prescription. Google Gemini extracts medicine names, dosages, and quantities automatically.</p>
+          <p>Send a photo or text of a doctor's prescription. Google Gemini extracts medicine names, dosages, and quantities automatically.</p>
         </div>
         <div class="action-card-link">Scan Prescription &rarr;</div>
       </a>
@@ -664,9 +664,9 @@
         <div>
           <div class="action-card-icon">⏱️</div>
           <h3>Hold & 2-Hour Pickup</h3>
-          <p>Instant reservation code (RES-XXXX) holding stock for 2 hours in Cairo timezone, with automated restocking if not claimed.</p>
+          <p>Instant reservation code holding stock for 2 hours in Cairo timezone, with automated restocking if not claimed.</p>
         </div>
-        <div class="action-card-link">Order via WhatsApp &rarr;</div>
+        <div class="action-card-link">Order via Channels &rarr;</div>
       </a>
     </div>
   </section>
@@ -674,34 +674,33 @@
   <!-- 3. TRY IT SECTION -->
   <section id="try">
     <h2>Try it</h2>
-    <p>Test the Dawaya intelligent medicine matching and reservation engine below:</p>
+    <p>Connected directly to your real n8n workflow. Every message goes through your real n8n nodes:</p>
 
-    <!-- Medicine & Prescription Assistant -->
+    <!-- Medicine & Prescription Assistant (REAL N8N CONNECTION) -->
     <div id="try-assistant" class="try-section">
-      <h3 style="font-size: 1.15rem; color: white; margin-bottom: 4px;">Medication & Prescription Assistant</h3>
-      <p style="font-size: 0.85rem; margin-bottom: 12px;">Type a medicine name or quantity (e.g. "Panadol 500mg 2", "Brufen 400", "Tramadol") to test catalog matching & alternatives:</p>
+      <h3 style="font-size: 1.15rem; color: white; margin-bottom: 4px;">Live Pharmacy Assistant</h3>
+      <p style="font-size: 0.85rem; margin-bottom: 12px;">Ask about medications, dosages, or availability (all queries answered by your live n8n workflow):</p>
 
       <div id="msgs"></div>
 
       <div class="suggest-chips">
-        <span style="font-size: 0.75rem; color: var(--text-dim); padding: 4px 0;">Quick Test Chips:</span>
-        <button type="button" class="chip" data-q="Panadol 500mg x2">Panadol 500mg x2 (Auto Reserve)</button>
-        <button type="button" class="chip" data-q="Brufen 400mg">Brufen 400mg (In Stock)</button>
-        <button type="button" class="chip" data-q="Augmentin 1g">Augmentin 1g (Antibiotic)</button>
-        <button type="button" class="chip" data-q="Cataflam 50mg">Cataflam 50mg (Out of stock &rarr; Find Alt)</button>
-        <button type="button" class="chip" data-q="Tramadol 50mg">Tramadol (Controlled &rarr; Pharmacist Review)</button>
+        <span style="font-size: 0.75rem; color: var(--text-dim); padding: 4px 0;">Suggestions:</span>
+        <button type="button" class="chip" data-q="Do you have Panadol Extra in stock?">Panadol Extra</button>
+        <button type="button" class="chip" data-q="What is the price and dose for Brufen 400?">Brufen 400</button>
+        <button type="button" class="chip" data-q="Do you have Augmentin 1g?">Augmentin 1g</button>
+        <button type="button" class="chip" data-q="What are the alternatives for Cataflam 50mg?">Cataflam alternatives</button>
       </div>
 
       <form id="ask">
-        <input id="q" placeholder="Type medicine name or e.g. 'Panadol 2, Brufen 1'..." required autocomplete="off">
-        <button type="submit">Verify Medicine</button>
+        <input id="q" placeholder="Ask your real n8n workflow (e.g. 'Do you have Panadol in stock?')" required autocomplete="off">
+        <button type="submit">Send</button>
       </form>
     </div>
 
     <!-- WhatsApp & Telegram Launchers -->
     <div id="try-channels" class="try-section" style="margin-top: 20px;">
       <h3 style="font-size: 1.15rem; color: white; margin-bottom: 4px;">Live Omnichannel Messaging</h3>
-      <p style="font-size: 0.85rem; margin-bottom: 14px;">Connect directly through WhatsApp or Telegram to send prescription photos and receive instant reservation confirmations:</p>
+      <p style="font-size: 0.85rem; margin-bottom: 14px;">Connected directly to your n8n WhatsApp and Telegram triggers:</p>
 
       <div class="buttons-row">
         <a id="whatsappLink" href="https://wa.me/" target="_blank" rel="noopener" class="btn-action">
@@ -712,7 +711,7 @@
         </a>
       </div>
       <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 10px;">
-        Webhook IDs: WhatsApp (<code>80c2fac7...</code>) &bull; Telegram (<code>782a79a9...</code>)
+        WhatsApp Webhook ID: <code>80c2fac7-9a4a-43c4-8ecd-f6f12d3bb24c</code> &bull; Telegram Webhook ID: <code>782a79a9-3288-4e32-83e9-cb1b742cf848</code>
       </p>
     </div>
   </section>
@@ -854,31 +853,27 @@
 
   <!-- JAVASCRIPT LOGIC -->
   <script>
-    // CONFIGURATION BLOCK
-    // Extracted from D:\Dawaa Wrokflow\Dawaya.json
-    // WhatsApp Trigger webhookId: 80c2fac7-9a4a-43c4-8ecd-f6f12d3bb24c
-    // Telegram Trigger webhookId: 782a79a9-3288-4e32-83e9-cb1b742cf848
+    // CONFIGURATION BLOCK - CONNECTS TO YOUR REAL N8N WORKFLOW
     const CONFIG = {
-      n8nBase: "https://happiest-powdering-coveting.ngrok-free.dev",
+      n8nBase:  "https://happiest-powdering-coveting.ngrok-free.dev",
       whatsappWebhook: "/webhook/80c2fac7-9a4a-43c4-8ecd-f6f12d3bb24c/webhook",
-      telegramWebhook: "/webhook/782a79a9-3288-4e32-83e9-cb1b742cf848/webhook",
-      healthz: "/healthz"
+      telegramWebhook: "/webhook/782a79a9-3288-4e32-83e9-cb1b742cf848/webhook"
     };
 
     const $ = s => document.querySelector(s);
     const sessionId = crypto.randomUUID();
 
-    // RULE 1: Keep ngrok-skip-browser-warning in headers
+    // RULE 1: Keep ngrok-skip-browser-warning in the chat request
     const HEADERS = {
       "Content-Type": "application/json",
       "ngrok-skip-browser-warning": "1"
     };
 
-    // Initialize ngrok input field
+    // Initialize inputs
     const ngrokInput = $("#ngrokInput");
-    if (ngrokInput) {
-      ngrokInput.value = CONFIG.n8nBase;
-    }
+    const chatPathInput = $("#chatPathInput");
+    if (ngrokInput) ngrokInput.value = CONFIG.n8nBase;
+    if (chatPathInput) chatPathInput.value = CONFIG.chat;
 
     function setStatus(online) {
       const statusEl = $("#status");
@@ -887,27 +882,20 @@
       document.querySelectorAll("#whatsappLink, #telegramLink").forEach(a => a.classList.toggle("disabled", !online));
     }
 
-    // Ping /healthz on n8n through ngrok to check live connection
+    // Ping n8n chat webhook to check if n8n and ngrok are both running
     async function checkStatus() {
       const statusEl = $("#status");
       statusEl.textContent = "Checking…";
       statusEl.className = "badge";
       
       try {
-        const url = CONFIG.n8nBase + CONFIG.healthz + "?ngrok-skip-browser-warning=1";
-        const res = await fetch(url, {
-          method: "GET",
-          headers: HEADERS
+        const url = CONFIG.n8nBase + CONFIG.chat + "?ngrok-skip-browser-warning=1";
+        const r = await fetch(url, {
+          method: "POST",
+          headers: HEADERS,
+          body: JSON.stringify({ action: "loadPreviousSession", sessionId })
         });
-        if (res.ok) {
-          setStatus(true);
-        } else {
-          // If healthz returns 404 on some n8n versions, fallback to OPTIONS on webhook
-          const r2 = await fetch(CONFIG.n8nBase + CONFIG.whatsappWebhook + "?ngrok-skip-browser-warning=1", {
-            method: "OPTIONS"
-          });
-          setStatus(r2.status < 500);
-        }
+        setStatus(r.ok || r.status < 500);
       } catch (err) {
         setStatus(false);
       }
@@ -918,13 +906,20 @@
     const updateBtn = $("#updateNgrokBtn");
     if (updateBtn) {
       updateBtn.onclick = () => {
-        let val = ngrokInput.value.trim().replace(/\/+$/, "");
-        if (!val) return;
-        if (!val.startsWith("http://") && !val.startsWith("https://")) {
-          val = "https://" + val;
+        let baseVal = ngrokInput.value.trim().replace(/\/+$/, "");
+        let pathVal = chatPathInput.value.trim();
+        if (baseVal) {
+          if (!baseVal.startsWith("http://") && !baseVal.startsWith("https://")) {
+            baseVal = "https://" + baseVal;
+          }
+          CONFIG.n8nBase = baseVal;
+          localStorage.setItem("dawaya_n8n_base", baseVal);
         }
-        CONFIG.n8nBase = val;
-        localStorage.setItem("dawaya_n8n_base", val);
+        if (pathVal) {
+          if (!pathVal.startsWith("/")) pathVal = "/" + pathVal;
+          CONFIG.chat = pathVal;
+          localStorage.setItem("dawaya_chat_path", pathVal);
+        }
         checkStatus();
       };
     }
@@ -939,77 +934,7 @@
       return d;
     }
 
-    // Client-side Pharmacy Catalog Engine (matches the n8n Match Catalog JS logic)
-    const CATALOG = [
-      { sku: "MED-001", name: "Panadol Extra", active: "Paracetamol", strength: "500mg", price: 35.0, stock: 50, controlled: false },
-      { sku: "MED-002", name: "Brufen", active: "Ibuprofen", strength: "400mg", price: 42.0, stock: 25, controlled: false },
-      { sku: "MED-003", name: "Augmentin", active: "Amoxicillin / Clavulanic", strength: "1g", price: 110.0, stock: 18, controlled: false },
-      { sku: "MED-004", name: "Cataflam", active: "Diclofenac Potassium", strength: "50mg", price: 58.0, stock: 0, controlled: false },
-      { sku: "MED-005", name: "Dolphin-K", active: "Diclofenac Potassium", strength: "50mg", price: 32.0, stock: 40, controlled: false },
-      { sku: "MED-006", name: "Tramadol", active: "Tramadol Hydrochloride", strength: "50mg", price: 85.0, stock: 15, controlled: true }
-    ];
-
-    function evaluateMedicineQuery(queryText) {
-      const q = queryText.toLowerCase();
-      
-      // Check for controlled drugs
-      if (q.includes("tramadol") || q.includes("zolam") || q.includes("xanax")) {
-        return {
-          status: "PHARMACIST_REVIEW",
-          badge: "⚠️ CONTROLLED MEDICATION (Schedule II)",
-          msg: "This medication is subject to strict prescription verification laws. Your request has been forwarded to our Head Pharmacist on Telegram for license & physical prescription review.",
-          action: "Pharmacist Dispatch Sent"
-        };
-      }
-
-      // Check for Cataflam (Out of stock & shows alternative)
-      if (q.includes("cataflam")) {
-        return {
-          status: "ALTERNATIVE_FOUND",
-          badge: "🔄 OUT OF STOCK &bull; ALTERNATIVE SUGGESTED",
-          msg: "Cataflam 50mg is currently out of stock. We found the identical generic equivalent in stock:\n• Dolphin-K 50mg (Diclofenac Potassium) - 32.00 EGP (Save 26 EGP!)\nWould you like us to reserve Dolphin-K instead?",
-          action: "Alternative Ready"
-        };
-      }
-
-      // Standard Match: Panadol
-      if (q.includes("panadol")) {
-        const resId = "RES-" + Math.floor(1000 + Math.random() * 9000);
-        return {
-          status: "AUTO_RESERVED",
-          badge: "✅ AUTO-RESERVED FOR 2 HOURS",
-          msg: "Panadol Extra 500mg is IN STOCK.\n• Quantity: 2 packs\n• Total Price: 70.00 EGP\n• Reservation Code: " + resId + "\n• Hold Duration: 2 Hours (expires at " + getExpiryTime() + " Cairo Time)\nPlease pick up your order before expiration.",
-          action: "Stock Decremented (-2)"
-        };
-      }
-
-      // Standard Match: Brufen / Augmentin
-      if (q.includes("brufen") || q.includes("augmentin") || q.includes("amoxicillin")) {
-        const resId = "RES-" + Math.floor(1000 + Math.random() * 9000);
-        return {
-          status: "AUTO_RESERVED",
-          badge: "✅ AUTO-RESERVED FOR 2 HOURS",
-          msg: "Medication successfully verified in pharmacy inventory:\n• Status: Available & Packaged\n• Reservation Code: " + resId + "\n• Hold Duration: 2 Hours\nYour order is held under Cairo timezone restock rules.",
-          action: "Reserved"
-        };
-      }
-
-      // Fallback
-      return {
-        status: "NOTHING_FOUND",
-        badge: "❓ UNRECOGNIZED REQUEST",
-        msg: "We couldn't clearly identify this medication in our pharmacy catalog. Please send a clearer photo of your prescription or specify the exact brand name.",
-        action: "Review Needed"
-      };
-    }
-
-    function getExpiryTime() {
-      const now = new Date();
-      now.setHours(now.getHours() + 2);
-      return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    // Chat Submit
+    // REAL N8N WORKFLOW EXECUTION (NO SAMPLE DATA)
     $("#ask").onsubmit = async e => {
       e.preventDefault();
       const qInput = $("#q");
@@ -1018,43 +943,31 @@
       qInput.value = "";
       
       add("me", q);
-      const bot = add("bot", "Verifying catalog & active ingredients…");
+      const bot = add("bot", "…");
 
-      // Simulate the exact n8n Dawaya Match Catalog & Gemini execution
-      setTimeout(async () => {
-        try {
-          // If live webhook responds, optionally forward
-          const evalResult = evaluateMedicineQuery(q);
-          
-          bot.textContent = "";
-          
-          const header = document.createElement("div");
-          header.style.fontWeight = "bold";
-          header.style.marginBottom = "6px";
-          header.style.color = evalResult.status === "AUTO_RESERVED" ? "#34d399" : (evalResult.status === "PHARMACIST_REVIEW" ? "#fcd34d" : "#38bdf8");
-          header.textContent = evalResult.badge.replace(/&bull;/g, "•");
-          bot.appendChild(header);
-
-          const body = document.createElement("div");
-          body.style.whiteSpace = "pre-wrap";
-          body.textContent = evalResult.msg;
-          bot.appendChild(body);
-
-          const actionDiv = document.createElement("div");
-          actionDiv.style.fontSize = "0.75rem";
-          actionDiv.style.color = "#94a3b8";
-          actionDiv.style.marginTop = "8px";
-          actionDiv.style.borderTop = "1px solid #1e293b";
-          actionDiv.style.paddingTop = "4px";
-          actionDiv.style.fontFamily = "var(--font-mono)";
-          actionDiv.textContent = "Pipeline Status: " + evalResult.action + " • African/Cairo Sync Active";
-          bot.appendChild(actionDiv);
-
-          $("#msgs").scrollTop = $("#msgs").scrollHeight;
-        } catch (err) {
-          bot.textContent = "Error processing prescription. Please check that n8n is running.";
-        }
-      }, 700);
+      try {
+        const url = CONFIG.n8nBase + CONFIG.chat + "?ngrok-skip-browser-warning=1";
+        const r = await fetch(url, {
+          method: "POST",
+          headers: HEADERS,
+          body: JSON.stringify({ 
+            action: "sendMessage", 
+            sessionId, 
+            chatInput: q,
+            text: q 
+          })
+        });
+        
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        const data = await r.json();
+        
+        // Output from the real n8n workflow
+        bot.textContent = data.output || data.text || data.message || (typeof data === "string" ? data : JSON.stringify(data));
+        setStatus(true);
+      } catch (err) {
+        bot.textContent = "The Dawaya assistant is offline right now. Please verify that your n8n workflow and ngrok are running.";
+        setStatus(false);
+      }
     };
 
     // Suggestion chips
