@@ -703,8 +703,8 @@
     </p>
 
     <div class="hero-meta">
-      <span class="badge off" role="status">
-        <span class="badge-dot"></span> Offline
+      <span class="badge" id="status" role="status">
+        <span class="badge-dot"></span> Checking…
       </span>
       <span style="font-size: 0.8rem; color: var(--text-dim);">
         Powered by n8n, Google Gemini Vision & Google Sheets
@@ -1011,47 +1011,98 @@
     refreshPanelLinks();
   </script>
 <script>
-// Paste your n8n PRODUCTION webhook URL here (https, contains /webhook/, not /webhook-test/).
-// This file is public: never put API keys or tokens in it.
-const STATUS_URL = "https://happiest-powdering-coveting.ngrok-free.dev/webhook/2eeba845-c622-4969-a89a-d0149e2f9b1e";
+  // Live Dawaya n8n Configuration & Status Monitor
+  const CONFIG = {
+    n8nBase: "https://happiest-powdering-coveting.ngrok-free.dev",
+    dawayaWebhook: "/webhook/80c2fac7-9a4a-43c4-8ecd-f6f12d3bb24c/webhook",
+    healthz: "/healthz"
+  };
 
-(function () {
-  const badge = document.querySelector(".hero-meta .badge");
-  if (!badge) return;
+  const HEADERS = {
+    "ngrok-skip-browser-warning": "1"
+  };
 
-  function show(state, text) {
-    badge.classList.remove("on", "off");
-    if (state) badge.classList.add(state);
+  function setStatus(online) {
+    const statusEl = document.getElementById("status") || document.querySelector(".hero-meta .badge");
+    if (!statusEl) return;
+    statusEl.className = "badge " + (online ? "on" : "off");
     const dot = document.createElement("span");
     dot.className = "badge-dot";
-    badge.replaceChildren(dot, " " + text);
+    statusEl.replaceChildren(dot, document.createTextNode(online ? " Online" : " Offline, please try again later"));
+
+    document.querySelectorAll("#whatsappLink, #telegramLink, #panelWhatsapp, #panelTelegram").forEach(a => {
+      a.classList.toggle("disabled", !online);
+      if (online) {
+        a.removeAttribute("aria-disabled");
+      } else {
+        a.setAttribute("aria-disabled", "true");
+      }
+    });
   }
 
-  async function check() {
-    if (!STATUS_URL) return show("off", "Offline");
+  async function checkStatus() {
+    const statusEl = document.getElementById("status") || document.querySelector(".hero-meta .badge");
+    if (statusEl && !statusEl.classList.contains("on")) {
+      const dot = document.createElement("span");
+      dot.className = "badge-dot";
+      statusEl.className = "badge";
+      statusEl.replaceChildren(dot, document.createTextNode(" Checking…"));
+    }
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8000);
+
     try {
-      const url = new URL(STATUS_URL);
-      const headers = url.hostname.includes("ngrok")
-        ? { "ngrok-skip-browser-warning": "1" }
-        : {};
-      const res = await fetch(url, { headers, cache: "no-store", signal: controller.signal });
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      await res.json(); // an HTML error page counts as offline
-      show("on", "Online");
-    } catch {
-      show("off", "Offline");
+      // 1. Primary check: Dawaya live webhook
+      const webhookUrl = CONFIG.n8nBase + CONFIG.dawayaWebhook;
+      const res = await fetch(webhookUrl, {
+        headers: HEADERS,
+        cache: "no-store",
+        signal: controller.signal
+      });
+      if (res.ok) {
+        setStatus(true);
+        return;
+      }
+      throw new Error("HTTP " + res.status);
+    } catch (err) {
+      // 2. Secondary check: n8n healthz endpoint
+      try {
+        const healthUrl = CONFIG.n8nBase + CONFIG.healthz;
+        const resHealth = await fetch(healthUrl, {
+          headers: HEADERS,
+          cache: "no-store",
+          signal: controller.signal
+        });
+        if (resHealth.ok) {
+          setStatus(true);
+          return;
+        }
+      } catch (err2) {
+        // 3. Fallback for strict browser local sandbox / file:// CORS policy
+        try {
+          await fetch(CONFIG.n8nBase + CONFIG.healthz, {
+            mode: "no-cors",
+            headers: HEADERS,
+            cache: "no-store",
+            signal: controller.signal
+          });
+          setStatus(true);
+          return;
+        } catch (err3) {
+          // Tunnel or backend is truly offline
+        }
+      }
+      setStatus(false);
     } finally {
       clearTimeout(timer);
     }
   }
 
-  show("", "Checking...");
-  check();
-  setInterval(() => { if (!document.hidden) check(); }, 60000);
-})();
+  checkStatus();
+  setInterval(() => {
+    if (!document.hidden) checkStatus();
+  }, 60000);
 </script>
 </body>
 </html>
